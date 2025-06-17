@@ -1,0 +1,4 @@
+nameko
+werkzeug
+pyjwt
+passlib
