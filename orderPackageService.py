@@ -40,7 +40,7 @@ class orderPackagesService:
 
     @rpc
     def change_order_packages_status(self, order_packages_id, new_status):
-        if new_status not in ['PENDING', 'ON DELIVERY', 'COMPLETED']:
+        if new_status not in ['PENDING', 'ON DELIVERY', 'COMPLETED', 'PACKED']: # Added PACKED status for packages
             return {"success": False, "error": "New status must be one of these: 'PENDING', 'ON DELIVERY', 'COMPLETED', 'PACKED'"}
         
         try:

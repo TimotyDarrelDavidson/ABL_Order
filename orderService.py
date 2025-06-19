@@ -7,12 +7,10 @@ class OrdersService:
 
     name = 'order_service'
     order_detail_rpc = RpcProxy('order_detail_service')
-    order_package_rpc = RpcProxy('order_package_service')
 
     database = dependencies.Database()
 
     @rpc
-    
     def get_all_orders(self):
         orders = self.database.get_all_orders()
         return orders
@@ -21,11 +19,11 @@ class OrdersService:
     def create_order_with_multiple_items(
         self, 
         items: list, # Accepts a list of item dictionaries
-        user_id: int = "default_user", 
-        reservasi_id: int = None, 
-        event_id: int = None, 
-        voucher_id: int = None, 
-        order_type: int = 1,
+        user_id: str = "default_user", 
+        reservasi_id: str = None, 
+        event_id: str = None, 
+        voucher_id: str = None, 
+        order_type: str = "", # Default type for mixed items
         total_payment: float = 0.0 
     ):
         """
@@ -78,7 +76,7 @@ class OrdersService:
 
                 # Extract optional fields, providing None if not present
                 item_note = item.get('note')
-                item_status = item.get('status', 'PENDING')  # Default to 'PENDING' if not provided
+                item_status = item.get('status')
                 item_chef_id = item.get('chef_id') # Do not default here; let the RPC method's default handle it or explicitly pass None
 
                 item_result = None
