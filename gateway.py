@@ -6,7 +6,7 @@ from nameko.web.handlers import http
 class GatewayService:
     name = 'gateway'
 
-    # RPC Proxies for your backend servicesj
+    # RPC Proxies for your backend services
     order_rpc = RpcProxy('order_service')
     order_detail_rpc = RpcProxy('order_detail_service')
     order_package_rpc = RpcProxy('order_package_service')
@@ -25,8 +25,53 @@ class GatewayService:
         except Exception as e:
             print(f"Gateway Error: get_all_orders - {e}")
             return 500, json.dumps({"error": str(e)})
-    
-     # --- Endpoints for OrderDetailService ---
+
+    @http('POST', '/orders/create_with_items')
+    def create_order_with_multiple_items(self, request):
+        """
+        Creates a new main order and associated order details/packages for multiple items.
+        Expected JSON body: {
+            "items": [
+                {"type": "menu_item", "id": 101, "quantity": 2, "chef_id": 500, "note": "extra cheese"},
+                {"type": "menu_package", "id": 201, "quantity": 1, "note": "gift wrap"}
+            ],
+            "user_id": "...",
+            "reservasi_id": "...",
+            "event_id": "...",
+            "voucher_id": "...",
+            "order_type": "...",
+            "total_payment": float
+        }
+        """
+        print("Gateway: Received POST /orders/create_with_items request")
+        try:
+            payload = json.loads(request.get_data(as_text=True))
+
+            # Validate required fields for the overall order creation
+            if 'items' not in payload or not isinstance(payload['items'], list):
+                return 400, json.dumps({"error": "Missing or invalid 'items' list in payload."})
+
+            # Call the RPC service
+            result = self.order_rpc.create_order_with_multiple_items(
+                items=payload['items'],
+                user_id=payload.get('user_id', 'default_user'),
+                reservasi_id=payload.get('reservasi_id'),
+                event_id=payload.get('event_id'),
+                voucher_id=payload.get('voucher_id'),
+                order_type=payload.get('order_type', ''),
+                total_payment=payload.get('total_payment', 0.0)
+            )
+
+            status_code = 200 if result.get("success") else 500
+            return status_code, json.dumps(result)
+        except json.JSONDecodeError:
+            return 400, json.dumps({"error": "Invalid JSON payload."})
+        except Exception as e:
+            print(f"Gateway Error: create_order_with_multiple_items - {e}")
+            return 500, json.dumps({"error": str(e)})
+
+
+    # --- Endpoints for OrderDetailService ---
 
     @http('GET', '/order-details')
     def get_all_order_details(self, request):
@@ -41,7 +86,7 @@ class GatewayService:
             print(f"Gateway Error: get_all_order_details - {e}")
             return 500, json.dumps({"error": str(e)})
 
-    @http('GET', '/order-details/by-order/<string:order_id>')
+    @http('GET', '/order-details/by-order/<int:order_id>')
     def get_order_details_by_order_id(self, request, order_id):
         """
         Retrieves order details by a specific order ID.
@@ -90,7 +135,7 @@ class GatewayService:
                 menu_id=payload['menu_id'],
                 chef_id=payload['chef_id'],
                 quantity=payload['quantity'],
-                note=payload.get('note'),   
+                note=payload.get('note'),
                 status=payload.get('status', 'PENDING') # Default status if not provided
             )
             return 201, json.dumps(result) # 201 Created
@@ -162,13 +207,9 @@ class GatewayService:
         except Exception as e:
             print(f"Gateway Error: change_order_details_note - {e}")
             return 500, json.dumps({"error": str(e)})
-        
-
-        # --- Endpoints for OrderPackageService ---
 
 
-
-    # -- Endopints for OrderPackageService --- #
+    # --- Endpoints for OrderPackageService ---
 
     @http('GET', '/order-packages')
     def get_all_order_packages(self, request):
@@ -183,7 +224,7 @@ class GatewayService:
             print(f"Gateway Error: get_all_order_packages - {e}")
             return 500, json.dumps({"error": str(e)})
 
-    @http('GET', '/order-packages/by-order/<string:order_id>')
+    @http('GET', '/order-packages/by-order/<int:order_id>')
     def get_order_packages_by_order_id(self, request, order_id):
         """
         Retrieves order packages by a specific order ID.

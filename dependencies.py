@@ -49,7 +49,8 @@ class DatabaseWrapper:
             values = (user_id, reservasi_id, event_id, voucher_id, order_type, total_payment)
             cursor.execute(sql, values)
             self.connection.commit()
-            new_order_id = cursor.lastrowid() # Get the ID of the newly inserted order
+            # FIX: Changed cursor.lastrowid() to cursor.lastrowid
+            new_order_id = cursor.lastrowid
             print(f"Main order added with ID: {new_order_id}")
             return {"success": True, "order_id": new_order_id}
         except mysql.connector.Error as e:
@@ -59,7 +60,6 @@ class DatabaseWrapper:
         finally:
             if cursor:
                 cursor.close()
-    
 
 
     # --- Order Packages --- #
