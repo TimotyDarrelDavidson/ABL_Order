@@ -43,10 +43,10 @@ class DatabaseWrapper:
             cursor = self.connection.cursor()
             sql = """
                 INSERT INTO `orders`
-                (user_id, reservasi_id, event_id, voucher_id, order_type, total_payment)
-                VALUES (%s, %s, %s, %s, %s, %s)
+                (user_id, reservasi_id, event_id, voucher_id, order_type, total_payment, created_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s)
             """
-            values = (user_id, reservasi_id, event_id, voucher_id, order_type, total_payment)
+            values = (user_id, reservasi_id, event_id, voucher_id, order_type, total_payment, created_at)
             cursor.execute(sql, values)
             self.connection.commit()
             # FIX: Changed cursor.lastrowid() to cursor.lastrowid
