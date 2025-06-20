@@ -1,5 +1,6 @@
 from nameko.extensions import DependencyProvider
 import mysql.connector
+from datetime import datetime
 
 class DatabaseWrapper:
 
@@ -37,7 +38,7 @@ class DatabaseWrapper:
             if cursor:
                 cursor.close()
     
-    def add_order(self, user_id, reservasi_id, event_id, voucher_id, order_type, total_payment):
+    def add_order(self, user_id, reservasi_id, event_id, voucher_id, order_type, total_payment, created_at):
         cursor = None
         try:
             cursor = self.connection.cursor()
@@ -61,6 +62,48 @@ class DatabaseWrapper:
             if cursor:
                 cursor.close()
 
+    def update_order(self, order_id, update_data):
+        cursor = None
+        try:
+            cursor = self.connection.cursor()
+
+            set_clauses = []
+            values = []
+            for key, value in update_data.items():
+                set_clauses.append(f"{key} = %s")
+                values.append(value)
+
+            if not set_clauses:
+                return False
+
+            values.append(order_id)
+            sql = f"UPDATE orders SET {', '.join(set_clauses)} WHERE order_id = %s"
+            cursor.execute(sql, values)
+            self.connection.commit()
+            return cursor.rowcount > 0
+        except mysql.connector.Error as e:
+            self.connection.rollback()
+            print(f"DatabaseWrapper.update_order error: {e}")
+            return False
+        finally:
+            if cursor:
+                cursor.close()
+
+    def delete_order(self, order_id):
+        cursor = None
+        try:
+            cursor = self.connection.cursor()
+            sql = "DELETE FROM orders WHERE order_id = %s"
+            cursor.execute(sql, (order_id,))
+            self.connection.commit()
+            return cursor.rowcount > 0
+        except mysql.connector.Error as e:
+            self.connection.rollback()
+            print(f"DatabaseWrapper.delete_order error: {e}")
+            return False
+        finally:
+            if cursor:
+                cursor.close()
 
     # --- Order Packages --- #
 
@@ -329,13 +372,31 @@ class DatabaseWrapper:
         try:
             cursor = self.connection.cursor(dictionary=True)
             
-            sql = "DELETE FROM `order_details` WHERE num = %s"
+            sql = "DELETE FROM `order_details` WHERE order_detail_id = %s"
             cursor.execute(sql,(order_detail_id,))
             self.connection.commit()
         except mysql.connector.Error as e:
             print(f"Database error: {e}")
         finally:
             cursor.close()
+    
+    def delete_order_details_by_order_id(self, order_id):
+        cursor = None
+        try:
+            cursor = self.connection.cursor()
+            sql = "DELETE FROM order_details WHERE order_id = %s"
+            cursor.execute(sql, (order_id,))
+            self.connection.commit()
+            return {"success": True, "message": f"Order details for order {order_id} deleted."}
+        except mysql.connector.Error as e:
+            self.connection.rollback()
+            print(f"Database error: {e}")
+            return {"success": False, "message": str(e)}
+        finally:
+            if cursor:
+                cursor.close()
+
+    
 
 class Database(DependencyProvider):
 

@@ -37,6 +37,9 @@ class orderPackagesService:
             print(f"Error adding order package: {e}")
             return {"success": False, "error": f"Failed to add order package: {e}"}
 
+    @rpc
+    def delete_order_packages_by_order_id(self, order_id):
+        return self.database.delete_order_packages_by_order_id(order_id)
 
     @rpc
     def change_order_packages_status(self, order_packages_id, new_status):

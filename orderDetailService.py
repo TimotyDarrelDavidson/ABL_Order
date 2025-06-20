@@ -40,6 +40,10 @@ class orderDetailsService:
         """
         self.database.add_order_details(order_id, menu_id, chef_id, quantity, note, status)
 
+    @rpc
+    def delete_order_details_by_order_id(self, order_id):
+        return self.database.delete_order_details_by_order_id(order_id)
+
 
     @rpc
     def change_order_details_status(self, order_details_id, new_status):
