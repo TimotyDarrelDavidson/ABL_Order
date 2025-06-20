@@ -1,8 +1,8 @@
-"""Initial MySQL schema for orders
+"""Deskripsi migrasi Anda
 
-Revision ID: 88b971a90649
+Revision ID: 6b649d41b58e
 Revises: 
-Create Date: 2025-06-20 11:43:06.329179
+Create Date: 2025-06-20 13:00:04.627884
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 from sqlalchemy.dialects import mysql
 
 # revision identifiers, used by Alembic.
-revision: str = '88b971a90649'
+revision: str = '6b649d41b58e'
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None

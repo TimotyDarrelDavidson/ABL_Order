@@ -13,7 +13,7 @@ from sqlalchemy import create_engine
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 # Import your Base.metadata from your new models.py file
-from orders.orders.models import Base # Corrected import path based on your image
+from orders.models import Base # Corrected import path based on your image
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
