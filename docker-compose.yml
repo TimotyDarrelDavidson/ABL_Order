@@ -1,0 +1,66 @@
+
+#version: '2'
+services:
+
+  # mysql PAYMENT
+  mysql:
+    container_name: mysql
+    image: mysql
+    ports:
+        - "5433:3306"
+    environment:
+        MYSQL_DATABASE: "abl_order"
+        MYSQL_ROOT_PASSWORD: ""
+        MYSQL_USER: "root"
+    restart: always
+
+  # RABBITMQ 
+  rabbit:
+      container_name: rabbitmq
+      image: rabbitmq:3.7-management
+      ports:
+          - "15673:15672"
+      restart: always
+
+  # GATEWAY
+  gateway:
+    container_name: gateway
+    build: ./gateway
+    depends_on:
+      - rabbit
+    ports:
+        - "8003:8000"
+    links:
+        - rabbit
+    environment:
+        RABBIT_PASSWORD: "guest"
+        RABBIT_USER: "guest"
+        RABBIT_HOST: "rabbit"
+        RABBIT_PORT: "5672"
+        RABBIT_MANAGEMENT_PORT: "15672"
+
+  # ORDERS
+  orders:
+    container_name: orders
+    build: ./orders
+    depends_on:
+      - rabbit
+      - mysql
+    ports:
+        - "8001:8000"
+    environment:
+        DB_PASSWORD: ""
+        DB_USER: "root"
+        DB_HOST: "mysql"
+        DB_NAME: "abl_order"
+        DB_PORT: "3306"
+        RABBIT_PASSWORD: "guest"
+        RABBIT_USER: "guest"
+        RABBIT_HOST: "rabbit"
+        RABBIT_PORT: "5672"
+        RABBIT_MANAGEMENT_PORT: "15672"
+
+networks:
+  default:
+    name: order
+    external: true
